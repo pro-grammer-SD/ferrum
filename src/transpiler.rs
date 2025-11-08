@@ -57,7 +57,7 @@ fn transpile_block(lines: &[&str], indent_level: usize) -> String {
             i += 1;
             continue;
         }
-        if line.starts_with("if ") {
+        if line.starts_with("if ") || line.starts_with("elif ") || line.starts_with("else:") {
             let (blk, consumed) = transpile_if_block(lines, i, indent_level);
             code.push_str(&blk);
             i = consumed;
@@ -84,16 +84,14 @@ fn transpile_if_block(lines: &[&str], start: usize, indent_level: usize) -> (Str
             if line.starts_with("if ") {
                 code.push_str(&format!("{}if {} {{\n", indent, normalize_expr(condition)));
             } else {
-                code.push_str(&format!("{} else if {} {{\n", indent, normalize_expr(condition)));
+                code.push_str(&format!("{}else if {} {{\n", indent, normalize_expr(condition)));
             }
 
             i += 1;
             let mut body = Vec::new();
             while i < lines.len() {
                 let l = lines[i];
-                if l.trim_start().starts_with("elif ")
-                    || l.trim_start().starts_with("else:")
-                    || leading_indent(l) <= base_indent {
+                if l.trim_start().starts_with("elif ") || l.trim_start().starts_with("else:") || leading_indent(l) <= base_indent {
                     break;
                 }
                 body.push(l);
@@ -111,9 +109,7 @@ fn transpile_if_block(lines: &[&str], start: usize, indent_level: usize) -> (Str
             let mut body = Vec::new();
             while i < lines.len() {
                 let l = lines[i];
-                if leading_indent(l) <= base_indent {
-                    break;
-                }
+                if leading_indent(l) <= base_indent { break; }
                 body.push(l);
                 i += 1;
             }
@@ -154,16 +150,16 @@ fn parse_function_header(header: &str) -> (String, String) {
 
 fn transpile_statement(line: &str) -> String {
     let l = line.trim();
-    if l.starts_with("input ") || l.starts_with("type_cast ") || l.starts_with("exit") || l.starts_with("print ") || l.starts_with("return ") {
+    if l.starts_with("input(") || l.starts_with("type_cast(") || l.starts_with("exit") || l.starts_with("print(") || l.starts_with("return ") {
         match l {
-            l if l.starts_with("input ") => transpile_input_line(l),
-            l if l.starts_with("type_cast ") => transpile_type_cast_line(l),
+            l if l.starts_with("input(") => transpile_input_line(l),
+            l if l.starts_with("type_cast(") => transpile_type_cast_line(l),
             l if l.starts_with("exit") => {
-                let parts: Vec<&str> = l.split_whitespace().collect();
-                let code = if parts.len() > 1 { parts[1] } else { "0" };
+                let parts: Vec<&str> = l.split(|c| c=='(' || c==')').collect();
+                let code = if parts.len() > 1 && !parts[1].trim().is_empty() { parts[1].trim() } else { "0" };
                 format!("std::process::exit({});", code)
             },
-            l if l.starts_with("print ") => transpile_print(l),
+            l if l.starts_with("print(") => transpile_print(l),
             l if l.starts_with("return ") => {
                 let val = l.strip_prefix("return ").unwrap_or("").trim();
                 format!("return {};", normalize_expr(val))
@@ -188,13 +184,13 @@ fn transpile_statement(line: &str) -> String {
 }
 
 fn transpile_input_line(line: &str) -> String {
-    let var = line.strip_prefix("input ").unwrap().trim();
+    let var = line.strip_prefix("input(").unwrap().trim_end_matches(')').trim();
     format!("let {} = {{ let mut input_line = String::new(); io::stdin().read_line(&mut input_line).unwrap(); input_line.trim().to_string() }};", var)
 }
 
 fn transpile_type_cast_line(line: &str) -> String {
-    let content = line.strip_prefix("type_cast ").unwrap().trim();
-    let parts: Vec<&str> = content.split_whitespace().collect();
+    let content = line.strip_prefix("type_cast(").unwrap().trim_end_matches(')').trim();
+    let parts: Vec<&str> = content.split(',').map(|s| s.trim().trim_matches('"')).collect();
     if parts.len() != 2 { return line.to_string(); }
     let val = normalize_expr(parts[0]);
     let tgt = parts[1];
@@ -206,45 +202,68 @@ fn transpile_type_cast_line(line: &str) -> String {
     }
 }
 
-fn transpile_print(line: &str) -> String {
-    let content = line.strip_prefix("print ").unwrap_or("").trim_end_matches(';').trim();
-
-    let parts: Vec<&str> = content.split(',').map(|p| p.trim()).collect();
-
-    let mut format_string = String::new();
-    let mut args: Vec<String> = Vec::new();
-
-    for part in parts {
-        if part.starts_with('"') && part.ends_with('"') {
-            // Append string literals without quotes to the format string
-            format_string.push_str(&part[1..part.len() -1]);
-        } else {
-            format_string.push_str("{}");
-            args.push(normalize_expr(part));
+fn split_top_level_commas(s: &str) -> Vec<String> {
+    let mut parts = Vec::new();
+    let mut cur = String::new();
+    let mut depth = 0usize;
+    let mut in_str = false;
+    let mut chars = s.chars().peekable();
+    while let Some(c) = chars.next() {
+        match c {
+            '"' => { cur.push(c); in_str = !in_str; }
+            '(' if !in_str => { depth += 1; cur.push(c); }
+            ')' if !in_str => { if depth>0 { depth-=1 }; cur.push(c); }
+            '[' if !in_str => { depth +=1; cur.push(c); }
+            ']' if !in_str => { if depth>0 { depth-=1 }; cur.push(c); }
+            ',' if !in_str && depth==0 => { parts.push(cur.trim().to_string()); cur.clear(); }
+            _ => cur.push(c),
         }
-        format_string.push(' ');
     }
-    format_string = format_string.trim_end().to_string();
+    if !cur.trim().is_empty() { parts.push(cur.trim().to_string()); }
+    parts
+}
 
-    if args.is_empty() {
-        format!("println!(\"{}\");", format_string)
-    } else {
-        format!("println!(\"{}\", {});", format_string, args.join(", "))
+fn transpile_print(line: &str) -> String {
+    let content = line.strip_prefix("print(").unwrap_or("").trim_end_matches(')').trim();
+    if content.is_empty() { return "println!(\"\");".to_string(); }
+    let parts = split_top_level_commas(content);
+    let mut fmt = String::new();
+    let mut args = Vec::new();
+    for part in parts {
+        let p = part.trim();
+        if p.is_empty() { continue; }
+        if p.starts_with('"') && p.ends_with('"') {
+            fmt.push_str(&p[1..p.len()-1]);
+        } else {
+            fmt.push_str("{}");
+            args.push(normalize_expr(p));
+        }
+        fmt.push(' ');
     }
+    fmt = fmt.trim_end().to_string();
+    if args.is_empty() { format!("println!(\"{}\");", fmt) }
+    else { format!("println!(\"{}\", {});", fmt, args.join(", ")) }
 }
 
 fn normalize_expr(s: &str) -> String {
     let s = s.trim();
     if s.is_empty() || (s.starts_with('"') && s.ends_with('"')) { return s.to_string(); }
+    if s.starts_with('[') && s.ends_with(']') { return s.to_string(); }
     if s.contains('(') && s.contains(')') { return s.to_string(); }
+
     let operators = ["+", "-", "*", "/", "%", ">", "<", "==", ">=", "<=", "!="];
     if operators.iter().any(|op| s.contains(op)) { return s.to_string(); }
+
     let tokens: Vec<&str> = s.split_whitespace().collect();
     if tokens.len() >= 2 {
         let name = tokens[0];
         if !["print","if","else:","elif","while","for","fn","return","exit","type_cast","input"].contains(&name) {
             let args = tokens[1..].join(", ");
-            return format!("{}({})", name, args);
+            if args.starts_with('(') && args.ends_with(')') {
+                return format!("{}{}", name, args);
+            } else {
+                return format!("{}({})", name, args);
+            }
         }
     }
     s.to_string()
