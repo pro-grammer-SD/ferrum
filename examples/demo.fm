@@ -1,0 +1,14 @@
+! Ferrum demo program
+x:int = input("Enter number");
+y:float = type_cast("3.14", float);
+z:list = x, y, "hello";
+
+fn add(a:int, b:int) -> int:
+    return a + b;
+
+if x > 10:
+    print "Big number";
+else:
+    print "Small number";
+
+print x, y, z;

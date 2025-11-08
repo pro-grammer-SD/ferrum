@@ -1,0 +1,8 @@
+[package]
+name = "ferrum_compiler"
+version = "1.0.0"
+edition = "2021"
+
+[[bin]]
+name = "ferrum_compiler"
+path = "src/main.rs"
