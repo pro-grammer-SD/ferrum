@@ -1,14 +1,34 @@
 ! Ferrum demo program
-x:int = input("Enter number");
-y:float = type_cast("3.14", float);
-z:list = x, y, "hello";
+
+x:int = input "Enter number"
+y:float = type_cast "3.14" float
+z:list = x, y, "Ferrum Rocks!"
 
 fn add(a:int, b:int) -> int:
-    return a + b;
+    return a + b
 
-if x > 10:
-    print "Big number";
+fn greet(name:str):
+    print "Hello" name "! Welcome to Ferrum."
+
+if x > 50:
+    print "Whoa, that's a big number!"
+    exit 1
+elif x > 10:
+    print "Decent number!"
 else:
-    print "Small number";
+    print "Tiny number!"
 
-print x, y, z;
+print "x =" x
+print "y =" y
+print "z =" z
+print "add(12, x) =" add 12 x
+
+greet "Soumalya"
+
+count:int = 0
+while count < 5:
+    print "Loop count:" count
+    count = add count 1
+
+print "Loop complete!"
+exit
