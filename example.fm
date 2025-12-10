@@ -1,0 +1,236 @@
+print("====== FERRUM COMPREHENSIVE EXAMPLES ======")
+
+# ========== BASIC ARITHMETIC & EXPRESSION EVALUATION ==========
+print("--- Arithmetic Expressions ---")
+result = 1 + 2
+print("1 + 2 = " + str(result))
+result = 10 - 3
+print("10 - 3 = " + str(result))
+result = 4 * 5
+print("4 * 5 = " + str(result))
+result = 20 / 4
+print("20 / 4 = " + str(result))
+
+# ========== MATH MODULE ==========
+print("--- Math Module ---")
+result = sin(1.57)
+print("sin(1.57) = " + str(result))
+result = cos(0.0)
+print("cos(0) = " + str(result))
+result = sqrt(16.0)
+print("sqrt(16) = " + str(result))
+result = pow(2.0, 8.0)
+print("pow(2, 8) = " + str(result))
+result = exp(1.0)
+print("exp(1) = " + str(result))
+result = abs(-42.0)
+print("abs(-42) = " + str(result))
+
+# ========== RANDOM MODULE ==========
+print("--- Random Module ---")
+r1 = randint(1, 100)
+print("randint(1, 100) = " + str(r1))
+r2 = randint(1, 100)
+print("randint(1, 100) = " + str(r2))
+r3 = randint(1, 100)
+print("randint(1, 100) = " + str(r3))
+
+# ========== RANGE & ITERATION ==========
+print("--- Range and Loop ---")
+sum_val = 0
+for i in range(1, 6):
+    sum_val = sum_val + i
+print("Sum of 1 to 5 = " + str(sum_val))
+
+# ========== TYPE CONVERSION ==========
+print("--- Type Casting ---")
+int_val = int("42")
+float_val = float("3.14")
+str_val = str(123)
+bool_val = bool(1)
+print("int('42') = " + str(int_val))
+print("float('3.14') = " + str(float_val))
+print("str(123) = " + str_val)
+print("bool(1) = " + str(bool_val))
+
+# ========== STRING & LIST UTILITIES ==========
+print("--- String/List Operations ---")
+text = "hello"
+length = len(text)
+is_digit = isdigit("12345")
+print("len('hello') = " + str(length))
+print("isdigit('12345') = " + str(is_digit))
+
+# ========== ZIP FUNCTION ==========
+print("--- Zip Function ---")
+list_a = list("abc")
+list_b = list("123")
+zipped = zip(list_a, list_b)
+print("zip successful")
+
+# ========== I/O MODULE ==========
+print("--- File I/O ---")
+write_file("test.txt", "Hello from Ferrum")
+content = read_file("test.txt")
+print("File operations successful")
+
+# ========== OS MODULE ==========
+print("--- OS Operations ---")
+cwd = getcwd()
+print("Current directory: " + cwd)
+print("Platform: " + platform())
+files = listdir(".")
+print("Files listed successfully")
+
+# ========== TIME MODULE ==========
+print("--- Time Operations ---")
+current_time = time()
+print("Current Unix timestamp: " + str(current_time))
+print("Sleeping for 1 second...")
+sleep(1.0)
+print("Sleep complete")
+
+# ========== CLASS DEFINITION ==========
+print("--- Class Demo ---")
+class Person:
+    def __init__(self, name):
+        self.name = name
+    
+    def greet(self):
+        msg = "Hello, I'm " + self.name
+        print(msg)
+        return msg
+
+alice = Person("Alice")
+alice.greet()
+
+bob = Person("Bob")
+bob.greet()
+
+# ========== GUI/ICED DEMO ==========
+print("--- UI/Iced Demo ---")
+
+# Create window using the high-level constructor
+w = Window()
+w.set_title("Ferrum Example UI")
+w.set_size(600, 400)
+
+# Create UI elements
+b = Button("Click Me!")
+s = Slider(0, 100)
+r = RadioButton("Option A")
+
+# Add elements to window
+w.add(b)
+w.add(s)
+w.add(r)
+
+# Demonstrate getting UI element properties
+print("Button label: " + b.get_label())
+print("Slider range: 0-100")
+print("RadioButton selected: " + str(r.is_selected()))
+
+# Set additional properties
+b.set_position(10, 10)
+s.set_coordinates(10, 50)
+r.set_position(10, 100)
+
+# Run the window
+print("Window launching...")
+w.run()
+
+# ========== OPENCV DEMO ==========
+print("--- OpenCV Computer Vision Demo ---")
+
+# Image operations
+img_id = cv_load_image("example.png")
+print("Image loaded: " + img_id)
+
+# Gaussian blur
+blurred = cv_gaussian_blur(img_id, 5)
+print("Gaussian blur applied")
+
+# Shape annotations
+cv_draw_rect(img_id, 100, 100, 200, 200, 255, 0, 0, 2)
+print("Rectangle drawn (red, thickness 2)")
+
+cv_draw_circle(img_id, 150, 150, 50, 0, 255, 0, 2)
+print("Circle drawn (green)")
+
+cv_draw_line(img_id, 50, 50, 200, 200, 0, 0, 255, 3)
+print("Line drawn (blue)")
+
+cv_draw_text(img_id, "Test Image", 10, 20, 255, 255, 255, 1.0)
+print("Text drawn")
+
+# Face and body detection
+faces = cv_detect_faces(img_id)
+print("Faces detected: " + str(len(faces)))
+
+landmarks = cv_detect_body_landmarks(img_id)
+print("Body landmarks detected: " + str(len(landmarks)))
+
+keypoints = cv_detect_hand_keypoints(img_id)
+print("Hand keypoints detected: " + str(len(keypoints)))
+
+# Save the result
+cv_save_image(img_id, "output.png")
+print("Processed image saved")
+
+# ========== CODE CHECKING & ANALYSIS ==========
+print("--- Code Analysis ---")
+test_code = "x = 5\ny = 10\nprint(y)"
+check_result = check(test_code)
+print(check_result)
+
+# ========== HELP SYSTEM ==========
+print("--- Help System ---")
+help_text = help("print")
+print(help_text)
+
+# will not work, and prints the available topics.
+help_text2 = help("Slider") 
+print(help_text2)
+
+# ========== ADVANCED FEATURES DEMONSTRATION ==========
+print("--- Advanced Features ---")
+
+# Create a more complex UI with multiple elements
+main_window = Window()
+main_window.set_title("Advanced UI Example")
+main_window.set_icon("icon/icon.png")
+main_window.set_position(100, 100)
+main_window.set_size(800, 600)
+
+# Create layout with multiple elements
+col = Column()
+col.set_position(10, 10)
+col.set_spacing(10)
+
+button1 = Button("Save")
+button2 = Button("Cancel")
+slider = Slider(0, 100)
+
+col.add("button1")
+col.add("button2")
+col.add("slider")
+
+main_window.add("column")
+main_window.run()
+
+print("Complex UI created successfully")
+
+# ========== SUBPROCESS MODULE ==========
+print("--- Subprocess Module ---")
+
+# Run a command and wait for completion
+result = subprocess_run("echo Hello from subprocess!")
+print("subprocess_run result: " + str(result))
+
+# Spawn a process for live interaction
+proc = subprocess_popen("ping -c 3 localhost")
+print("subprocess_popen result: " + str(proc))
+
+# ========== SCRIPT DEMONSTRATION COMPLETE ==========
+print("====== ALL DEMONSTRATIONS COMPLETE ======")
+print("Ferrum features successfully showcased!")
