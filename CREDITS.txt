@@ -1,1 +1,1 @@
-Thanks to @helloworld2468 and many others!
+Logo sourced from: https://github.com/rust-lang/rust-artwork/tree/master/2019-RustConf
