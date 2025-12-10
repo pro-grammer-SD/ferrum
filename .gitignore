@@ -1,2 +1,5 @@
 .vscode/
 target/
+# Skipping dist/ because people will build the binary themselves.
+# Plus, this requires a lot of complexity and even Git LFS.
+dist/
